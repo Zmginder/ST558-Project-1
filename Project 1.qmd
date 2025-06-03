@@ -1,0 +1,6 @@
+---
+title: "Project 1"
+author: "Zach Ginder and Makenna Meyer"
+format: pdf
+editor: visual
+---
