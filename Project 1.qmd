@@ -40,29 +40,70 @@ census_2010_q1 <- census_2010 |>
 #With function
 ```
 
-
 ## Question 2: Long Format Conversion
 
 ```{r}
+#Without function
 census_2010_q2 <- census_2010_q1 |>
   pivot_longer(cols = c(ends_with("D")),
                names_to = "SurveyYear",
                values_to = "Enrollment")
 ```
 
+```{r}
+#With function
+```
+
 ## Question 3: Adding Variables for Survey, Year, and Measurement
 
 ```{r}
+#Without function
 census_2010_q3 <- census_2010_q2 |>
   mutate(Survey = substr(SurveyYear, 1, 3)) |>
-  mutate(Year = substr(SurveyYear, 8, 9)) |>
-  mutate(Measurement = substr(SurveyYear, 1, 7))
+  mutate(Measurement = substr(SurveyYear, 1, 7)) |>
+  mutate(year_short = as.numeric(substr(SurveyYear, 8, 9))) |>
+  mutate(Year = ifelse(year_short <= 25, year_short + 2000, year_short + 1900))
 ```
+
+```{r}
+#With function
+```
+
 
 ## Question 4: Creating Two Data Sets
 
 ```{r}
+#Without function
+indices <- grep(pattern = ", \\w\\w", census_2010_q3$Area_name)
 
+county <- census_2010_q3[indices,]
+non_county <- census_2010_q3[-c(indices),]
+```
+
+```{r}
+#With function
+```
+
+## Question 5: Creating State Variable for County Tibble
+
+```{r}
+#Without function
+```
+
+
+```{r}
+#With function
+```
+
+## Question 6: Creating Division Variable for Non-County Tibble
+
+```{r}
+#Without function
+```
+
+
+```{r}
+#With function
 ```
 
 
@@ -94,4 +135,3 @@ plot.state <- function(df, var_name = "_your_default_value_"){
 ```{r}
 plot(_class_state_df_here_, var_name = ...).
 ```
-
