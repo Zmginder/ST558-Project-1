@@ -5,7 +5,7 @@ format: pdf
 editor: visual
 ---
 
-```{r}
+```{r, warnings=FALSE}
 #Load in libraries
 library(tidyverse)
 ```
@@ -15,6 +15,8 @@ library(tidyverse)
 ```{r}
 #| message: false
 census_2010<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
+
+sectiontwo <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv")
 ```
 
 ## Data Processing
