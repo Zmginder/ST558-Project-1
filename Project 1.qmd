@@ -46,3 +46,32 @@ head(census_2010,n=5L)
 
 ```
 
+## Generic Function for Summarizing
+
+```{r}
+#Run these in your console
+plot.function #what is used for a class = function
+```
+
+```{r}
+getS3method("plot","data.frame") #what is used for a class = data frame
+```
+
+```{r}
+plot
+```
+
+```{r}
+plot.state <- function(df, var_name = "_your_default_value_"){
+#code to find the means for each division and year (think tidyverse)
+#Use get(var_name) to reference the var_name in your call to mean(): mean(get(var_name))
+#For this, think group_by along with summarize
+#remove the "ERROR" setting
+#create a line plot with ggplot with appropriate aes() assignments
+}
+```
+
+```{r}
+plot(_class_state_df_here_, var_name = ...).
+```
+
