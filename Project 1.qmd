@@ -13,9 +13,17 @@ library(tidyverse)
 ## Data Reading
 
 ```{r}
-census_2010<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
+census_2010<- read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
 
 sectiontwo <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv")
+
+testdata_a <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01a.csv")
+
+testdata_b <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01b.csv")
+
+testdata_c <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01c.csv")
+
+testdata_d <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01d.csv")
 ```
 
 ## Data Processing
@@ -23,28 +31,40 @@ sectiontwo <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv")
 ## Question 1: Column Selection
 
 ```{r}
-#Select columns with area name, STCOU, and any column
-#that ends in D
-census_2010<- census_2010|> 
-  select(Area_name, STCOU, ends_with("D"))|>
-  rename(area_name=Area_name)
-head(census_2010,n=5L)
+#Without function
+census_2010_q1 <- census_2010 |>
+  select(Area_name, STCOU, ends_with("D"))
 ```
+
+```{r}
+#With function
+```
+
 
 ## Question 2: Long Format Conversion
 
 ```{r}
-#Convert the tibble into long format
-census_2010<- census_2010|> 
-  pivot_longer(selected_data, cols = ends_with("D"), names_to = "Survey", values_to = value)
-head(census_2010,n=5L)
+census_2010_q2 <- census_2010_q1 |>
+  pivot_longer(cols = c(ends_with("D")),
+               names_to = "SurveyYear",
+               values_to = "Enrollment")
 ```
 
-## Question 3:
+## Question 3: Adding Variables for Survey, Year, and Measurement
+
+```{r}
+census_2010_q3 <- census_2010_q2 |>
+  mutate(Survey = substr(SurveyYear, 1, 3)) |>
+  mutate(Year = substr(SurveyYear, 8, 9)) |>
+  mutate(Measurement = substr(SurveyYear, 1, 7))
+```
+
+## Question 4: Creating Two Data Sets
 
 ```{r}
 
 ```
+
 
 ## Generic Function for Summarizing
 
