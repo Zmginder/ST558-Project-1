@@ -35,8 +35,17 @@ head(selected_columns, n=5L)
 ```{r}
 #Convert the tibble into long format
 long_format<- selected_columns|> 
-  pivot_longer(cols = ends_with("D"), names_to = "Survey")
+  pivot_longer(cols = ends_with("D"), names_to = "surveys")
 head(long_format,n=5L)
+
+#Function that does question 1 and 2
+long_conversion<-function(tibble, value="values for enrollment"){
+  long_format<- tibble|>
+    select(Area_name, STCOU, ends_with("D"))|>
+    rename(area_name=Area_name)|>
+    pivot_longer(cols = ends_with("D"), names_to = "surveys")
+  return(long_format)
+}
 ```
 
 ## Question 3: Create Year and Measurement Columns
@@ -44,8 +53,17 @@ head(long_format,n=5L)
 ```{r}
 #Parse the Survey column to create measurement and year columns
 long_updated<-long_format|>
-  mutate(Year=as.numeric(substr(Survey,8,9)))|>
-  mutate(Year=ifelse(Year<=25 & Year>=0,Year+2000,Year+1900))|>
-  mutate(Measurement=substr(Survey,1,7))
+  mutate(years=as.numeric(substr(surveys,8,9)))|>
+  mutate(years=ifelse(years<=25 & years>=0,years+2000,years+1900))|>
+  mutate(measurements=substr(surveys,1,7))
 head(long_updated,n=5L)
+
+#Function that does question 3
+surveys_year_measurements<-function(long_format){
+  long_updated<-tibble|>
+  mutate(years=as.numeric(substr(surveys,8,9)))|>
+  mutate(years=ifelse(years<=25 & years>=0,years+2000,years+1900))|>
+  mutate(measurements=substr(surveys,1,7))
+  return(long_updated)
+}
 ```
