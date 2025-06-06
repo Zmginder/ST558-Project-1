@@ -39,6 +39,17 @@ head(census_2010,n=5L)
 census_2010<- census_2010|> 
   pivot_longer(selected_data, cols = ends_with("D"), names_to = "Survey", values_to = value)
 head(census_2010,n=5L)
+<<<<<<< HEAD
 ```
 
 Question 3
+=======
+```
+
+## Question 3:
+
+```{r}
+
+```
+
+>>>>>>> makenna_branch
