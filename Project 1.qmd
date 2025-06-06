@@ -26,7 +26,6 @@ census_2010<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
 #that ends in D
 census_2010<- census_2010|> 
   select(Area_name, STCOU, ends_with("D"))|>
-  mutate(area_name=Area_name)
   rename(area_name=Area_name)
 head(census_2010,n=5L)
 ```
