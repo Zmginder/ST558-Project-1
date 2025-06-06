@@ -4,3 +4,24 @@ author: "Zach Ginder and Makenna Meyer"
 format: pdf
 editor: visual
 ---
+
+```{r}
+#Load in libraries
+library(tidyverse)
+```
+
+## Data Reading
+
+```{r}
+census_2010<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
+```
+
+## Data Processing
+
+## Question 1: Column Selection
+
+```{r}
+#Select columns with area name, STCOU, and any column
+#that ends in D
+census_2010<- census_2010|> select(Area_name, STCOU, ends_with("D"))|>mutate(area_name=Area_name)
+```
