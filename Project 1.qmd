@@ -219,6 +219,8 @@ tibble1<-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01
 tibble2<-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv",
                           value=value)
 
+combine_tibbles(tibble1,tibble2)
+
 ```
 
 # Generic Functions
