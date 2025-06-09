@@ -13,7 +13,7 @@ library(tidyverse)
 ## Data Reading
 
 ```{r}
-census_2010<- read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
+census_2010 <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
 
 sectiontwo <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv")
 
@@ -36,6 +36,7 @@ census_2010_q1 <- census_2010 |>
   select(Area_name, STCOU, ends_with("D"))
 ```
 
+
 ## Step 2: Long Format Conversion
 
 ```{r}
@@ -50,14 +51,15 @@ census_2010_q2 <- census_2010_q1 |>
 #With function
 
 #Function that does question 1 and 2
-long_conversion < -function(tibble, value="values for enrollment"){
-  long_format<- tibble |>
+long_conversion <- function(tibble, value="values for enrollment"){
+  long_format <- tibble |>
     select(Area_name, STCOU, ends_with("D"))|>
     rename(area_name = Area_name)|>
     pivot_longer(cols = ends_with("D"), names_to = "surveys")
   return(long_format)
 }
 ```
+
 
 ## Step 3: Adding Variables for Survey, Year, and Measurement
 
@@ -74,8 +76,8 @@ census_2010_q3 <- census_2010_q2 |>
 #With function
 
 #Function that does question 3
-surveys_year_measurements <- function(tibble){
-  long_updated <- tibble |>
+surveys_year_measurements <- function(long_format){
+  long_updated <- long_format |>
   mutate(years = as.numeric(substr(surveys,8,9))) |>
   mutate(years = ifelse(years <= 25 & years >= 0, years + 2000, years + 1900)) |>
   mutate(measurements = substr(surveys, 1, 7))
@@ -97,6 +99,7 @@ non_county <- census_2010_q3[-c(indices),]
 class(non_county) <- c("state", class(non_county))
 ```
 
+
 ## Step 5: Creating State Variable for County Tibble
 
 ```{r}
@@ -104,7 +107,6 @@ class(non_county) <- c("state", class(non_county))
 county_q5 <- county |>
   mutate(state = substr(Area_name, (nchar(Area_name) - 1), nchar(Area_name)))
 ```
-
 
 ```{r}
 #With function
@@ -115,7 +117,11 @@ adding_state_to_county <- function(county_tibble){
     mutate(state = substr(Area_name, (nchar(Area_name) - 1), nchar(Area_name)))
   return(county_w_state)
 }
+
+#Testing 
+county_q5_func <- adding_state_to_county(county)
 ```
+
 
 ## Step 6: Creating Division Variable for Non-County Tibble
 
@@ -143,7 +149,6 @@ non_county_q6 <- non_county |>
                      ~ "Pacific",
                      TRUE ~ "ERROR"))
 ```
-
 
 ```{r}
 #With function
@@ -173,6 +178,9 @@ adding_division_to_noncounty <- function(noncounty_tibble){
                      TRUE ~ "ERROR"))
   return(noncounty_w_division)
 }
+
+#Testing 
+noncounty_q6_func <- adding_division_to_noncounty(non_county)
 ```
 
 ```{r}
