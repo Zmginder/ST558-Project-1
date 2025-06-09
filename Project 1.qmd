@@ -36,10 +36,6 @@ census_2010_q1 <- census_2010 |>
   select(Area_name, STCOU, ends_with("D"))
 ```
 
-```{r}
-#With function
-```
-
 ## Question 2: Long Format Conversion
 
 ```{r}
@@ -52,6 +48,15 @@ census_2010_q2 <- census_2010_q1 |>
 
 ```{r}
 #With function
+
+#Function that does question 1 and 2
+long_conversion < -function(tibble, value="values for enrollment"){
+  long_format<- tibble |>
+    select(Area_name, STCOU, ends_with("D"))|>
+    rename(area_name = Area_name)|>
+    pivot_longer(cols = ends_with("D"), names_to = "surveys")
+  return(long_format)
+}
 ```
 
 ## Question 3: Adding Variables for Survey, Year, and Measurement
@@ -67,6 +72,15 @@ census_2010_q3 <- census_2010_q2 |>
 
 ```{r}
 #With function
+
+#Function that does question 3
+surveys_year_measurements <- function(long_format){
+  long_updated <- tibble |>
+  mutate(years = as.numeric(substr(surveys,8,9))) |>
+  mutate(years = ifelse(years <= 25 & years >= 0, years + 2000, years + 1900)) |>
+  mutate(measurements = substr(surveys, 1, 7))
+  return(long_updated)
+}
 ```
 
 
