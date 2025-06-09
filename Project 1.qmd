@@ -6,6 +6,8 @@ editor: visual
 ---
 
 ```{r, warnings=FALSE}
+rm(list=ls())
+
 #Load in libraries
 library(tidyverse)
 ```
@@ -33,7 +35,8 @@ testdata_d <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01d.csv")
 ```{r}
 #Without function
 census_2010_q1 <- census_2010 |>
-  select(Area_name, STCOU, ends_with("D"))
+  select(Area_name, STCOU, ends_with("D")) |>
+  rename("area_name" = "Area_name")
 ```
 
 
@@ -58,6 +61,9 @@ long_conversion <- function(tibble, value="values for enrollment"){
     pivot_longer(cols = ends_with("D"), names_to = "surveys")
   return(long_format)
 }
+
+#Testing 
+long_format <- long_conversion(census_2010)
 ```
 
 
@@ -83,6 +89,9 @@ surveys_year_measurements <- function(long_format){
   mutate(measurements = substr(surveys, 1, 7))
   return(long_updated)
 }
+
+#Testing
+long_updated <- surveys_year_measurements(long_format)
 ```
 
 
@@ -90,7 +99,7 @@ surveys_year_measurements <- function(long_format){
 
 ```{r}
 #Without function
-indices <- grep(pattern = ", \\w\\w", census_2010_q3$Area_name)
+indices <- grep(pattern = ", \\w\\w", census_2010_q3$area_name)
 
 county <- census_2010_q3[indices,]
 class(county) <- c("county", class(county))
@@ -105,7 +114,7 @@ class(non_county) <- c("state", class(non_county))
 ```{r}
 #Without function
 county_q5 <- county |>
-  mutate(state = substr(Area_name, (nchar(Area_name) - 1), nchar(Area_name)))
+  mutate(state = substr(area_name, (nchar(area_name) - 1), nchar(area_name)))
 ```
 
 ```{r}
@@ -114,7 +123,7 @@ county_q5 <- county |>
 #Function to perform step 5
 adding_state_to_county <- function(county_tibble){
   county_w_state <- county_tibble |>
-    mutate(state = substr(Area_name, (nchar(Area_name) - 1), nchar(Area_name)))
+    mutate(state = substr(area_name, (nchar(area_name) - 1), nchar(area_name)))
   return(county_w_state)
 }
 
@@ -129,23 +138,23 @@ county_q5_func <- adding_state_to_county(county)
 #Without function
 non_county_q6 <- non_county |>
   mutate(division = 
-           case_when(Area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE",
+           case_when(area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE",
                                       "RHODE ISLAND", "VERMONT") ~ "New England",
-                     Area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
-                     Area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", "WISCONSIN") 
+                     area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
+                     area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", "WISCONSIN") 
                      ~ "East North Central",
-                     Area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
+                     area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
                                       "NORTH DAKOTA", "SOUTH DAKOTA") ~ "West North Central",
-                     Area_name %in% c("DELAWARE", "District of Columbia", "DISTRICT OF COLUMBIA",
+                     area_name %in% c("DELAWARE", "District of Columbia", "DISTRICT OF COLUMBIA",
                                       "FLORIDA", "GEORGIA", "MARYLAND", "NORTH CAROLINA", 
                                       "SOUTH CAROLINA", "VIRGINIA", "WEST VIRGINIA") ~ "South Atlantic",
-                     Area_name %in% c("KENTUCKY", "TENNESSEE", "MISSISSIPPI", "ALABAMA")
+                     area_name %in% c("KENTUCKY", "TENNESSEE", "MISSISSIPPI", "ALABAMA")
                      ~ "East South Central",
-                     Area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", "TEXAS")
+                     area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", "TEXAS")
                      ~ "West South Central", 
-                     Area_name %in% c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA",
+                     area_name %in% c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA",
                                       "NEW MEXICO", "UTAH", "WYOMING") ~ "Mountain",
-                     Area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", "WASHINGTON")
+                     area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", "WASHINGTON")
                      ~ "Pacific",
                      TRUE ~ "ERROR"))
 ```
@@ -157,23 +166,23 @@ non_county_q6 <- non_county |>
 adding_division_to_noncounty <- function(noncounty_tibble){
   noncounty_w_division <- noncounty_tibble |>
     mutate(division = 
-           case_when(Area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE",
+           case_when(area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE",
                                       "RHODE ISLAND", "VERMONT") ~ "New England",
-                     Area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
-                     Area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", "WISCONSIN") 
+                     area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
+                     area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", "WISCONSIN") 
                      ~ "East North Central",
-                     Area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
+                     area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
                                       "NORTH DAKOTA", "SOUTH DAKOTA") ~ "West North Central",
-                     Area_name %in% c("DELAWARE", "District of Columbia", "DISTRICT OF COLUMBIA",
+                     area_name %in% c("DELAWARE", "District of Columbia", "DISTRICT OF COLUMBIA",
                                       "FLORIDA", "GEORGIA", "MARYLAND", "NORTH CAROLINA", 
                                       "SOUTH CAROLINA", "VIRGINIA", "WEST VIRGINIA") ~ "South Atlantic",
-                     Area_name %in% c("KENTUCKY", "TENNESSEE", "MISSISSIPPI", "ALABAMA")
+                     area_name %in% c("KENTUCKY", "TENNESSEE", "MISSISSIPPI", "ALABAMA")
                      ~ "East South Central",
-                     Area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", "TEXAS")
+                     area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", "TEXAS")
                      ~ "West South Central", 
-                     Area_name %in% c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA",
+                     area_name %in% c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA",
                                       "NEW MEXICO", "UTAH", "WYOMING") ~ "Mountain",
-                     Area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", "WASHINGTON")
+                     area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", "WASHINGTON")
                      ~ "Pacific",
                      TRUE ~ "ERROR"))
   return(noncounty_w_division)
@@ -187,7 +196,7 @@ noncounty_q6_func <- adding_division_to_noncounty(non_county)
 #Writing function that uses Step 3 output and performs Steps 4, 5, and 6
 
 creating2tibbles_addingstateordivision <- function(long_updated){
-  indices <- grep(pattern = ", \\w\\w", long_updated$Area_name)
+  indices <- grep(pattern = ", \\w\\w", long_updated$area_name)
   county_tibble <- long_updated[indices,]
   class(county_tibble) <- c("county", class(county_tibble))
   
@@ -197,9 +206,11 @@ creating2tibbles_addingstateordivision <- function(long_updated){
   county_state_final <- adding_state_to_county(county_tibble)
   noncounty_division_final <- adding_division_to_noncounty(noncounty_tibble)
   
-  return(county_state_final)
-  return(noncounty_division_final)
+  return(list("county_final" = county_state_final, "noncounty_final" = noncounty_division_final))
 }
+
+#Testing function for 456
+final_datasets <- creating2tibbles_addingstateordivision(long_updated)
 ```
 
 ## Generic Function for Summarizing
