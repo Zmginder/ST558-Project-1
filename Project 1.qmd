@@ -101,11 +101,15 @@ long_updated <- surveys_year_measurements(long_format)
 #Without function
 indices <- grep(pattern = ", \\w\\w", census_2010_q3$area_name)
 
-county <- census_2010_q3[indices,]
-class(county) <- c("county", class(county))
+county_tibble <- census_2010_q3[indices,]
+class(county_tibble) <- c("county", class(county_tibble))
 
-non_county <- census_2010_q3[-c(indices),]
-class(non_county) <- c("state", class(non_county))
+state_tibble <- census_2010_q3[-c(indices),]
+class(state_tibble) <- c("state", class(state_tibble))
+
+head(county_tibble, n=10)
+
+head(state_tibble, n=10)
 ```
 
 
@@ -128,7 +132,7 @@ adding_state_to_county <- function(county_tibble){
 }
 
 #Testing 
-county_q5_func <- adding_state_to_county(county)
+county_q5_func <- adding_state_to_county(county_tibble)
 ```
 
 
@@ -136,7 +140,7 @@ county_q5_func <- adding_state_to_county(county)
 
 ```{r}
 #Without function
-non_county_q6 <- non_county |>
+non_county_q6 <- state_tibble |>
   mutate(division = 
            case_when(area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE",
                                       "RHODE ISLAND", "VERMONT") ~ "New England",
@@ -163,8 +167,8 @@ non_county_q6 <- non_county |>
 #With function
 
 #Function to perform step 6
-adding_division_to_noncounty <- function(noncounty_tibble){
-  noncounty_w_division <- noncounty_tibble |>
+adding_division_to_noncounty <- function(state_tibble){
+  noncounty_w_division <- state_tibble |>
     mutate(division = 
            case_when(area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE",
                                       "RHODE ISLAND", "VERMONT") ~ "New England",
@@ -189,7 +193,7 @@ adding_division_to_noncounty <- function(noncounty_tibble){
 }
 
 #Testing 
-noncounty_q6_func <- adding_division_to_noncounty(non_county)
+noncounty_q6_func <- adding_division_to_noncounty(state_tibble)
 ```
 
 ```{r}
@@ -200,11 +204,11 @@ creating2tibbles_addingstateordivision <- function(long_updated){
   county_tibble <- long_updated[indices,]
   class(county_tibble) <- c("county", class(county_tibble))
   
-  noncounty_tibble <- long_updated[-c(indices),]
-  class(noncounty_tibble) <- c("state", class(noncounty_tibble))
+  state_tibble <- long_updated[-c(indices),]
+  class(state_tibble) <- c("state", class(state_tibble))
   
   county_state_final <- adding_state_to_county(county_tibble)
-  noncounty_division_final <- adding_division_to_noncounty(noncounty_tibble)
+  noncounty_division_final <- adding_division_to_noncounty(state_tibble)
   
   return(list("county_final" = county_state_final, "noncounty_final" = noncounty_division_final))
 }
