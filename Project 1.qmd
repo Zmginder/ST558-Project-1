@@ -201,8 +201,10 @@ wrapper_function<-function(url, value="values for enrollment"){
 }
 ```
 
+## Create Function to Combine Tibbles From Wrapper Iterations
+
 ```{r}
-#Test wrapper function on two data sets
+#Test wrapper function on two data sets and combine them
 combine_tibbles<-function(tibble1,tibble2){
   county_combined_tibble<-tibble(bind_rows(as.data.frame(tibble1["county_final"]),as.data.frame(tibble2["county_final"])))
   state_combined_tibble<-tibble(bind_rows(as.data.frame(tibble1["noncounty_final"]),
@@ -214,6 +216,5 @@ tibble1<-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01
                           value=value)
 tibble2<-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv",
                           value=value)
-combine_tibbles(tibble1,tibble2)
 
 ```
