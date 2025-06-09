@@ -17,7 +17,7 @@ library(tidyverse)
 census_2010<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
 ```
 
-# Data Processing
+# Data Processing with Functions
 
 ## Question 1: Column Selection
 
@@ -189,7 +189,9 @@ creating2tibbles_addingstateordivision <- function(long_updated){
 final_datasets <- creating2tibbles_addingstateordivision(long_updated)
 ```
 
-## Creating Wrapper Function
+# Combining Data Functions
+
+## Creating a Wrapper Function
 
 ```{r}
 wrapper_function<-function(url, value="values for enrollment"){
@@ -216,5 +218,13 @@ tibble1<-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01
                           value=value)
 tibble2<-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv",
                           value=value)
+
+```
+
+# Generic Functions
+
+## Writing Generic Functions for Summarizing
+
+```{r}
 
 ```
