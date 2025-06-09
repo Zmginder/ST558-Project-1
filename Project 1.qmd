@@ -28,7 +28,7 @@ testdata_d <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01d.csv")
 
 ## Data Processing
 
-## Question 1: Column Selection
+## Step 1: Column Selection
 
 ```{r}
 #Without function
@@ -36,7 +36,7 @@ census_2010_q1 <- census_2010 |>
   select(Area_name, STCOU, ends_with("D"))
 ```
 
-## Question 2: Long Format Conversion
+## Step 2: Long Format Conversion
 
 ```{r}
 #Without function
@@ -59,7 +59,7 @@ long_conversion < -function(tibble, value="values for enrollment"){
 }
 ```
 
-## Question 3: Adding Variables for Survey, Year, and Measurement
+## Step 3: Adding Variables for Survey, Year, and Measurement
 
 ```{r}
 #Without function
@@ -74,7 +74,7 @@ census_2010_q3 <- census_2010_q2 |>
 #With function
 
 #Function that does question 3
-surveys_year_measurements <- function(long_format){
+surveys_year_measurements <- function(tibble){
   long_updated <- tibble |>
   mutate(years = as.numeric(substr(surveys,8,9))) |>
   mutate(years = ifelse(years <= 25 & years >= 0, years + 2000, years + 1900)) |>
@@ -84,7 +84,7 @@ surveys_year_measurements <- function(long_format){
 ```
 
 
-## Question 4: Creating Two Data Sets
+## Step 4: Creating Two Data Sets
 
 ```{r}
 #Without function
@@ -94,11 +94,7 @@ county <- census_2010_q3[indices,]
 non_county <- census_2010_q3[-c(indices),]
 ```
 
-```{r}
-#With function
-```
-
-## Question 5: Creating State Variable for County Tibble
+## Step 5: Creating State Variable for County Tibble
 
 ```{r}
 #Without function
@@ -109,9 +105,16 @@ county_q5 <- county |>
 
 ```{r}
 #With function
+
+#Function to perform step 5
+adding_state_to_county <- function(county_tibble){
+  county_w_state <- county_tibble |>
+    mutate(state = substr(Area_name, (nchar(Area_name) - 1), nchar(Area_name)))
+  return(county_w_state)
+}
 ```
 
-## Question 6: Creating Division Variable for Non-County Tibble
+## Step 6: Creating Division Variable for Non-County Tibble
 
 ```{r}
 #Without function
@@ -141,6 +144,32 @@ non_county_q6 <- non_county |>
 
 ```{r}
 #With function
+
+#Function to perform step 6
+adding_division_to_noncounty <- function(noncounty_tibble){
+  noncounty_w_division <- noncounty_tibble |>
+    mutate(division = 
+           case_when(Area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE",
+                                      "RHODE ISLAND", "VERMONT") ~ "New England",
+                     Area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
+                     Area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", "WISCONSIN") 
+                     ~ "East North Central",
+                     Area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
+                                      "NORTH DAKOTA", "SOUTH DAKOTA") ~ "West North Central",
+                     Area_name %in% c("DELAWARE", "District of Columbia", "DISTRICT OF COLUMBIA",
+                                      "FLORIDA", "GEORGIA", "MARYLAND", "NORTH CAROLINA", 
+                                      "SOUTH CAROLINA", "VIRGINIA", "WEST VIRGINIA") ~ "South Atlantic",
+                     Area_name %in% c("KENTUCKY", "TENNESSEE", "MISSISSIPPI", "ALABAMA")
+                     ~ "East South Central",
+                     Area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", "TEXAS")
+                     ~ "West South Central", 
+                     Area_name %in% c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA",
+                                      "NEW MEXICO", "UTAH", "WYOMING") ~ "Mountain",
+                     Area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", "WASHINGTON")
+                     ~ "Pacific",
+                     TRUE ~ "ERROR"))
+  return(noncounty_w_division)
+}
 ```
 
 
