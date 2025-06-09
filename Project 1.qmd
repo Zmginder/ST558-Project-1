@@ -88,6 +88,8 @@ non_county <- census_2010_q3[-c(indices),]
 
 ```{r}
 #Without function
+county_q5 <- county |>
+  mutate(state = substr(Area_name, (nchar(Area_name) - 1), nchar(Area_name)))
 ```
 
 
@@ -99,6 +101,27 @@ non_county <- census_2010_q3[-c(indices),]
 
 ```{r}
 #Without function
+non_county_q6 <- non_county |>
+  mutate(division = 
+           case_when(Area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE",
+                                      "RHODE ISLAND", "VERMONT") ~ "New England",
+                     Area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
+                     Area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", "WISCONSIN") 
+                     ~ "East North Central",
+                     Area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
+                                      "NORTH DAKOTA", "SOUTH DAKOTA") ~ "West North Central",
+                     Area_name %in% c("DELAWARE", "District of Columbia", "DISTRICT OF COLUMBIA",
+                                      "FLORIDA", "GEORGIA", "MARYLAND", "NORTH CAROLINA", 
+                                      "SOUTH CAROLINA", "VIRGINIA", "WEST VIRGINIA") ~ "South Atlantic",
+                     Area_name %in% c("KENTUCKY", "TENNESSEE", "MISSISSIPPI", "ALABAMA")
+                     ~ "East South Central",
+                     Area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", "TEXAS")
+                     ~ "West South Central", 
+                     Area_name %in% c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA",
+                                      "NEW MEXICO", "UTAH", "WYOMING") ~ "Mountain",
+                     Area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", "WASHINGTON")
+                     ~ "Pacific",
+                     TRUE ~ "ERROR"))
 ```
 
 
