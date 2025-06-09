@@ -68,7 +68,7 @@ surveys_year_measurements<-function(long_format){
 }
 ```
 
-## Step 4: Creating Two Data Sets
+## Question 4: Creating Two Data Sets
 
 ```{r}
 #Without function
@@ -85,7 +85,7 @@ head(county_tibble, n=10L)
 head(state_tibble, n=10L)
 ```
 
-## Step 5: Creating State Variable for County Tibble
+## Question 5: Creating State Variable for County Tibble
 
 ```{r}
 #Without function
@@ -107,7 +107,7 @@ adding_state_to_county <- function(county_tibble){
 county_q5_func <- adding_state_to_county(county_tibble)
 ```
 
-## Step 6: Creating Division Variable for Non-County Tibble
+## Question 6: Creating Division Variable for Non-County Tibble
 
 ```{r}
 #Without function
@@ -181,7 +181,8 @@ creating2tibbles_addingstateordivision <- function(long_updated){
   county_state_final <- adding_state_to_county(county_tibble)
   noncounty_division_final <- adding_division_to_noncounty(state_tibble)
   
-  return(list("county_final" = county_state_final, "noncounty_final" = noncounty_division_final))
+  return(list("county_final" = county_state_final, 
+              "noncounty_final" = noncounty_division_final))
 }
 
 #Testing function for 456
@@ -202,6 +203,17 @@ wrapper_function<-function(url, value="values for enrollment"){
 
 ```{r}
 #Test wrapper function on two data sets
-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv",value=value)
-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv",value=value)
+combine_tibbles<-function(tibble1,tibble2){
+  county_combined_tibble<-tibble(bind_rows(as.data.frame(tibble1["county_final"]),as.data.frame(tibble2["county_final"])))
+  state_combined_tibble<-tibble(bind_rows(as.data.frame(tibble1["noncounty_final"]),
+                                          as.data.frame(tibble2["noncounty_final"])))
+  return(list("county_combined" = county_combined_tibble, 
+              "state_combined" = state_combined_tibble))
+}
+tibble1<-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv",
+                          value=value)
+tibble2<-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv",
+                          value=value)
+combine_tibbles(tibble1,tibble2)
+
 ```
