@@ -229,12 +229,32 @@ combine_tibbles(tibble1,tibble2)
 
 ```{r}
 #Create plot.state function
-plot.state<-function(tibble,var_name="value"){
-  mean_tibble<- tibble|>
+plot.state<-function(state_tibble,var_name="value"){
+  mean_tibble<- state_tibble|>
     group_by(division,years)|>
     filter(!division %in% c("ERROR"))|>
     summarise(mean_enrollment=mean(get(var_name),na.rm=TRUE))
   return(ggplot(mean_tibble,aes(x=years,y=mean_enrollment,group=division,color=division))+
            geom_line())
 }
+combined<-combine_tibbles(tibble1,tibble2)
+plot.state(combined[[2]])
+
+```
+
+```{r}
+#Create plot.county function
+plot.county<-function(county_tibble,State="KY",top_or_bottom="top",
+                      number_investigated=5,var_name="value"){
+  mean_tibble<-county_tibble|>
+    filter(state %in% (State))|>
+    group_by(area_name)|>
+    summarise(mean_enrollment=mean(get(var_name),na.rm=TRUE))|>
+    #arrange()
+    
+final_tibble<-ifelse(top_or_bottom=="top",head(mean_tibble,number_investigated),
+       tail(mean_tibble,number_investigated))
+return(final_tibble)
+}
+
 ```
