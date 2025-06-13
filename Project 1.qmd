@@ -5,7 +5,8 @@ format: pdf
 editor: visual
 ---
 
-```{r, warnings=FALSE}
+```{r}
+#| message: false
 #Load in libraries
 library(tidyverse)
 ```
@@ -244,17 +245,28 @@ plot.state(combined[[2]])
 
 ```{r}
 #Create plot.county function
-plot.county<-function(county_tibble,State="KY",top_or_bottom="top",
+plot.county<-function(county_data,State="KY",top_or_bottom="top",
                       number_investigated=5,var_name="value"){
-  mean_tibble<-county_tibble|>
+  mean_tibble<-county_data|>
     filter(state %in% (State))|>
     group_by(area_name)|>
-    summarise(mean_enrollment=mean(get(var_name),na.rm=TRUE))|>
-    #arrange()
-    
-final_tibble<-ifelse(top_or_bottom=="top",head(mean_tibble,number_investigated),
-       tail(mean_tibble,number_investigated))
+    summarise(mean_enrollment=mean(get(var_name),na.rm=TRUE))
+  
+  if(top_or_bottom=="top"){
+    final_tibble<-mean_tibble|>
+      arrange(desc(mean_enrollment))|>
+      head(n=number_investigated)|>
+      select(area_name)
+  }
+  else{
+    final_tibble<-mean_tibble|>
+      arrange(mean_enrollment)|>
+      head(n=number_investigated)|>
+      select(area_name)
+  }
 return(final_tibble)
 }
 
 ```
+
+# Putting It All Together
