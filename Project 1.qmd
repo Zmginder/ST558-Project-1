@@ -5,7 +5,7 @@ format: pdf
 editor: visual
 ---
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, message=FALSE}
 rm(list=ls())
 
 #Load in libraries
@@ -14,7 +14,7 @@ library(tidyverse)
 
 # Data Reading
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, message=FALSE}
 census_2010<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
 ```
 
@@ -265,7 +265,7 @@ return(final_tibble)
 
 ## Testing the functions on the initial two datasets
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, message=FALSE}
 #Process two data sets and combine them
 tibble1 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv",
                           value = value)
@@ -306,7 +306,7 @@ plot(combined[[1]], State = "PA", top_or_bottom = "top", number_investigated = 8
 
 ## Testing functions on four additional datasets
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, message=FALSE}
 #Read in the following data
 data_01a<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01a.csv")
 data_01b<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01b.csv")
@@ -314,43 +314,9 @@ data_01c<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01c.csv")
 data_01d<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01d.csv")
 ```
 
-### Running the data processing functions on each of the four datasets
-
-#### Dataset A
+### Running the Data Processing (Wrapping) Functions on Each of the Four Datasets
 
 ```{r}
-data_01a_steps1and2 <- long_conversion(data_01a) #Performing steps 1 and 2
-data_01a_step3 <- surveys_year_measurements(data_01a_steps1and2) #Performing step 3
-creating2tibbles_addingstateordivision(data_01a_step3) #Performing steps 4, 5, and 6
-```
-
-#### Dataset B
-
-```{r}
-data_01b_steps1and2 <- long_conversion(data_01b) #Performing steps 1 and 2
-data_01b_step3 <- surveys_year_measurements(data_01b_steps1and2) #Performing step 3
-creating2tibbles_addingstateordivision(data_01b_step3) #Performing steps 4, 5, and 6
-```
-
-#### Dataset C
-
-```{r}
-data_01c_steps1and2 <- long_conversion(data_01c) #Performing steps 1 and 2
-data_01c_step3 <- surveys_year_measurements(data_01c_steps1and2) #Performing step 3
-creating2tibbles_addingstateordivision(data_01c_step3) #Performing steps 4, 5, and 6
-```
-
-#### Dataset D
-
-```{r}
-data_01d_steps1and2 <- long_conversion(data_01d) #Performing steps 1 and 2
-data_01d_step3 <- surveys_year_measurements(data_01d_steps1and2) #Performing step 3
-creating2tibbles_addingstateordivision(data_01d_step3) #Performing steps 4, 5, and 6
-```
-
-### Creating a Singular Object Using the Wrapper Function
-
-```{r, warning=FALSE}
 tibble1 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/PST01a.csv",
                           value = value)
 tibble2 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/PST01b.csv",
@@ -359,7 +325,11 @@ tibble3 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/PST
                           value = value)
 tibble4 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/PST01d.csv",
                           value = value)
+```
 
+### Creating a Singular Object Using the Data Combining Function
+
+```{r, warning=FALSE, message=FALSE}
 combined12 <- combine_tibbles(tibble1, tibble2)
 combined123 <- combine_tibbles(combined12, tibble3)
 combined1234 <- combine_tibbles(combined123, tibble4)
