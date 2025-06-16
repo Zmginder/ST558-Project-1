@@ -5,45 +5,48 @@ format: pdf
 editor: visual
 ---
 
-```{r}
-#| message: false
+```{r, warning=FALSE}
+rm(list=ls())
+
 #Load in libraries
 library(tidyverse)
 ```
 
 # Data Reading
 
-```{r}
-#| message: false
+```{r, warning=FALSE}
 census_2010<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
 ```
 
-# Data Processing with Functions
+# Data Processing, with and without Functions
 
 ## Question 1: Column Selection
 
 ```{r}
-#Select columns with area name, STCOU, and any column that ends in D
-selected_columns<-census_2010|> 
-  select(Area_name, STCOU, ends_with("D"))|>
-  rename(area_name=Area_name)
-head(selected_columns, n=5L)
-
+#Without function
+selected_columns <- census_2010 |> 
+  select(Area_name, STCOU, ends_with("D")) |> #Selecting area name, STCOU, and all columns ending in D
+  rename(area_name = Area_name) #Renaming Area_name
+head(selected_columns, n = 5L) #Returning first 5 rows
 ```
 
 ## Question 2: Long Format Conversion
 
 ```{r}
-#Convert the tibble into long format
-long_format<- selected_columns|> 
+#Without function
+long_format <- selected_columns |> 
   pivot_longer(cols = ends_with("D"), names_to = "surveys")
-head(long_format,n=5L)
+head(long_format, n = 5L) #Returning first 5 rows
+```
 
+```{r}
+#With function
 #Function that does question 1 and 2
-long_conversion<-function(tibble, value="values for enrollment"){
-  long_format<- tibble|>
-    select(Area_name, STCOU, ends_with("D"))|>
-    rename(area_name=Area_name)|>
+#Convert the tibble into long format
+long_conversion <-function(tibble, value = "values for enrollment") {
+  long_format <- tibble |>
+    select(Area_name, STCOU, ends_with("D")) |>
+    rename(area_name = Area_name) |>
     pivot_longer(cols = ends_with("D"), names_to = "surveys")
   return(long_format)
 }
@@ -52,19 +55,20 @@ long_conversion<-function(tibble, value="values for enrollment"){
 ## Question 3: Create Year and Measurement Columns
 
 ```{r}
+#Without function
 #Parse the Survey column to create measurement and year columns
-long_updated<-long_format|>
-  mutate(years=as.numeric(substr(surveys,8,9)))|>
-  mutate(years=ifelse(years<=25 & years>=0,years+2000,years+1900))|>
-  mutate(measurements=substr(surveys,1,7))
-head(long_updated,n=5L)
+long_updated <- long_format |>
+  mutate(years = as.numeric(substr(surveys, 8, 9))) |>
+  mutate(years = ifelse(years <= 25 & years >= 0, years + 2000, years + 1900)) |>
+  mutate(measurements = substr(surveys, 1, 7))
+head(long_updated, n = 5L)
 
 #Function that does question 3
-surveys_year_measurements<-function(long_format){
-  long_updated<-long_format|>
-  mutate(years=as.numeric(substr(surveys,8,9)))|>
-  mutate(years=ifelse(years<=25 & years>=0,years+2000,years+1900))|>
-  mutate(measurements=substr(surveys,1,7))
+surveys_year_measurements <- function(long_format) {
+  long_updated<-long_format |>
+  mutate(years = as.numeric(substr(surveys, 8, 9))) |>
+  mutate(years = ifelse(years <= 25 & years >= 0, years + 2000, years + 1900)) |>
+  mutate(measurements=substr(surveys, 1, 7))
   return(long_updated)
 }
 ```
@@ -73,7 +77,7 @@ surveys_year_measurements<-function(long_format){
 
 ```{r}
 #Without function
-indices <- grep(pattern = ", \\w\\w", long_updated$area_name)
+indices <- grep(pattern = ", \\w\\w", long_updated$area_name) #get the county indices
 
 county_tibble <- long_updated[indices,]
 class(county_tibble) <- c("county", class(county_tibble))
@@ -96,16 +100,12 @@ county_q5 <- county_tibble |>
 
 ```{r}
 #With function
-
 #Function to perform step 5
 adding_state_to_county <- function(county_tibble){
   county_w_state <- county_tibble |>
     mutate(state = substr(area_name, (nchar(area_name) - 1), nchar(area_name)))
   return(county_w_state)
 }
-
-#Testing 
-county_q5_func <- adding_state_to_county(county_tibble)
 ```
 
 ## Question 6: Creating Division Variable for Non-County Tibble
@@ -114,24 +114,28 @@ county_q5_func <- adding_state_to_county(county_tibble)
 #Without function
 non_county_q6 <- state_tibble |>
   mutate(division = 
-           case_when(area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE",
-                                      "RHODE ISLAND", "VERMONT") ~ "New England",
-                     area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
-                     area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", "WISCONSIN") 
-                     ~ "East North Central",
-                     area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
-                                      "NORTH DAKOTA", "SOUTH DAKOTA") ~ "West North Central",
-                     area_name %in% c("DELAWARE", "District of Columbia", "DISTRICT OF COLUMBIA",
-                                      "FLORIDA", "GEORGIA", "MARYLAND", "NORTH CAROLINA", 
-                                      "SOUTH CAROLINA", "VIRGINIA", "WEST VIRGINIA") ~ "South Atlantic",
+           case_when(area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", 
+                                      "NEW HAMPSHIRE","RHODE ISLAND", "VERMONT")
+                     ~ "New England",
+                     area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA")
+                     ~ "Mid-Atlantic",
+                     area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", 
+                                      "WISCONSIN") ~ "East North Central",
+                     area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI",
+                                      "NEBRASKA", "NORTH DAKOTA", "SOUTH DAKOTA")
+                     ~ "West North Central",
+                     area_name %in% c("DELAWARE", "District of Columbia", 
+                                      "DISTRICT OF COLUMBIA", "FLORIDA", "GEORGIA", 
+                                      "MARYLAND", "NORTH CAROLINA", "SOUTH CAROLINA",
+                                      "VIRGINIA", "WEST VIRGINIA") ~ "South Atlantic",
                      area_name %in% c("KENTUCKY", "TENNESSEE", "MISSISSIPPI", "ALABAMA")
                      ~ "East South Central",
                      area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", "TEXAS")
                      ~ "West South Central", 
                      area_name %in% c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA",
                                       "NEW MEXICO", "UTAH", "WYOMING") ~ "Mountain",
-                     area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", "WASHINGTON")
-                     ~ "Pacific",
+                     area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", 
+                                      "WASHINGTON") ~ "Pacific",
                      TRUE ~ "ERROR"))
 ```
 
@@ -141,31 +145,32 @@ non_county_q6 <- state_tibble |>
 #Function to perform step 6
 adding_division_to_noncounty <- function(state_tibble){
   noncounty_w_division <- state_tibble |>
-    mutate(division = 
-           case_when(area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE",
-                                      "RHODE ISLAND", "VERMONT") ~ "New England",
-                     area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
-                     area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", "WISCONSIN") 
-                     ~ "East North Central",
-                     area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
-                                      "NORTH DAKOTA", "SOUTH DAKOTA") ~ "West North Central",
-                     area_name %in% c("DELAWARE", "District of Columbia", "DISTRICT OF COLUMBIA",
-                                      "FLORIDA", "GEORGIA", "MARYLAND", "NORTH CAROLINA", 
-                                      "SOUTH CAROLINA", "VIRGINIA", "WEST VIRGINIA") ~ "South Atlantic",
+    mutate(division =
+             case_when(area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", 
+                                      "NEW HAMPSHIRE","RHODE ISLAND", "VERMONT")
+                     ~ "New England",
+                     area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA")
+                     ~ "Mid-Atlantic",
+                     area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", 
+                                      "WISCONSIN") ~ "East North Central",
+                     area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI",
+                                      "NEBRASKA", "NORTH DAKOTA", "SOUTH DAKOTA")
+                     ~ "West North Central",
+                     area_name %in% c("DELAWARE", "District of Columbia", 
+                                      "DISTRICT OF COLUMBIA", "FLORIDA", "GEORGIA", 
+                                      "MARYLAND", "NORTH CAROLINA", "SOUTH CAROLINA",
+                                      "VIRGINIA", "WEST VIRGINIA") ~ "South Atlantic",
                      area_name %in% c("KENTUCKY", "TENNESSEE", "MISSISSIPPI", "ALABAMA")
                      ~ "East South Central",
                      area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", "TEXAS")
                      ~ "West South Central", 
                      area_name %in% c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA",
                                       "NEW MEXICO", "UTAH", "WYOMING") ~ "Mountain",
-                     area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", "WASHINGTON")
-                     ~ "Pacific",
+                     area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", 
+                                      "WASHINGTON") ~ "Pacific",
                      TRUE ~ "ERROR"))
   return(noncounty_w_division)
 }
-
-#Testing 
-noncounty_q6_func <- adding_division_to_noncounty(state_tibble)
 ```
 
 ```{r}
@@ -185,9 +190,6 @@ creating2tibbles_addingstateordivision <- function(long_updated){
   return(list("county_final" = county_state_final, 
               "noncounty_final" = noncounty_division_final))
 }
-
-#Testing function for 456
-final_datasets <- creating2tibbles_addingstateordivision(long_updated)
 ```
 
 # Combining Data Functions
@@ -195,10 +197,10 @@ final_datasets <- creating2tibbles_addingstateordivision(long_updated)
 ## Creating a Wrapper Function
 
 ```{r}
-wrapper_function<-function(url, value="values for enrollment"){
-  tibbles<-read_csv(url)|>
-    long_conversion(value=value)|>
-    surveys_year_measurements()|>
+wrapper_function <- function(url, value="values for enrollment") {
+  tibbles <- read_csv(url) |>
+    long_conversion(value = value) |>
+    surveys_year_measurements() |>
     creating2tibbles_addingstateordivision()
   return(tibbles)
 }
@@ -208,10 +210,10 @@ wrapper_function<-function(url, value="values for enrollment"){
 
 ```{r}
 #Test wrapper function on two data sets and combine them
-combine_tibbles<-function(tibble1,tibble2){
-  county_combined_tibble<-bind_rows(tibble1[["county_final"]],
+combine_tibbles <- function(tibble1,tibble2) {
+  county_combined_tibble <- bind_rows(tibble1[["county_final"]],
                                     tibble2[["county_final"]])
-  state_combined_tibble<-bind_rows(tibble1[["noncounty_final"]],
+  state_combined_tibble <- bind_rows(tibble1[["noncounty_final"]],
                                     tibble2[["noncounty_final"]])
   return(list("county_combined" = county_combined_tibble, 
               "state_combined" = state_combined_tibble))
@@ -224,55 +226,54 @@ combine_tibbles<-function(tibble1,tibble2){
 
 ```{r}
 #Create plot.state function
-plot.state<-function(state_tibble,var_name="value"){
-  mean_tibble<- state_tibble|>
-    group_by(division,years)|>
-    filter(!division %in% c("ERROR"))|>
-    summarise(mean_enrollment=mean(get(var_name),na.rm=TRUE))
-  return(ggplot(mean_tibble,aes(x=years,y=mean_enrollment,group=division,color=division))+
-           geom_line())
+plot.state <- function(state_tibble,var_name="value") {
+  mean_tibble <- state_tibble |>
+    group_by(division, years) |>
+    filter(!division %in% c("ERROR")) |>
+    summarise(mean_enrollment = mean(get(var_name), na.rm = TRUE))
+  return(ggplot(mean_tibble, 
+                aes(x = years, y = mean_enrollment, group = division, color = division))
+         + geom_line())
 }
-
 ```
 
 ```{r}
 #Create plot.county function
-plot.county<-function(county_data,State="KY",top_or_bottom="top",
-                      number_investigated=5,var_name="value"){
-  mean_tibble<-county_data|>
-    filter(state %in% (State))|>
-    group_by(area_name)|>
-    summarise(mean_enrollment=mean(get(var_name),na.rm=TRUE))
+plot.county <- function(county_data,State="KY",top_or_bottom="top",
+                      number_investigated=5,var_name="value") {
+  mean_tibble <- county_data |>
+    filter(state %in% (State)) |>
+    group_by(area_name) |>
+    summarise(mean_enrollment = mean(get(var_name), na.rm = TRUE))
   
-  if(top_or_bottom=="top"){
-    final_tibble<-mean_tibble|>
-      arrange(desc(mean_enrollment))|>
-      head(n=number_investigated)|>
+  if(top_or_bottom == "top") {
+    final_tibble <- mean_tibble |>
+      arrange(desc(mean_enrollment)) |>
+      head(n = number_investigated) |>
       select(area_name)
-  }
-  else{
+  } else {
     final_tibble<-mean_tibble|>
       arrange(mean_enrollment)|>
-      head(n=number_investigated)|>
+      head(n = number_investigated)|>
       select(area_name)
   }
 return(final_tibble)
 }
-
 ```
 
 # Putting It All Together
 
-```{r}
-#| message: false
-#Process two data sets and combine them
-tibble1<-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv",
-                          value=value)
-tibble2<-wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv",
-                          value=value)
+## Testing the functions on the initial two datasets
 
-combine_tibbles(tibble1,tibble2)
-combined<-combine_tibbles(tibble1,tibble2)
+```{r, warning=FALSE}
+#Process two data sets and combine them
+tibble1 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv",
+                          value = value)
+tibble2 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv",
+                          value = value)
+
+combine_tibbles(tibble1, tibble2)
+combined <- combine_tibbles(tibble1, tibble2)
 ```
 
 ```{r}
@@ -283,13 +284,13 @@ plot(combined[[2]])
 ```{r}
 #Use the plot function on the county data frame
 #Specify state to be NC, group top, number 20
-plot(combined[[1]],State = "NC",top_or_bottom = "top",number_investigated = 20)
+plot(combined[[1]], State = "NC", top_or_bottom = "top", number_investigated = 20)
 ```
 
 ```{r}
 #Use the plot function on the county data frame
 #Specify state to be SC, group bottom, number 7
-plot(combined[[1]],State = "SC",top_or_bottom = "bottom",number_investigated = 7)
+plot(combined[[1]], State = "SC", top_or_bottom = "bottom", number_investigated = 7)
 ```
 
 ```{r}
@@ -300,14 +301,99 @@ plot(combined[[1]])
 ```{r}
 #Use the plot function on the county data frame
 #Specify state to be PA, group top, number 8
-plot(combined[[1]],State = "PA",top_or_bottom = "top",number_investigated = 8)
+plot(combined[[1]], State = "PA", top_or_bottom = "top", number_investigated = 8)
 ```
 
-```{r}
-#| message: false
+## Testing functions on four additional datasets
+
+```{r, warning=FALSE}
 #Read in the following data
 data_01a<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01a.csv")
 data_01b<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01b.csv")
 data_01c<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01c.csv")
 data_01d<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01d.csv")
+```
+
+### Running the data processing functions on each of the four datasets
+
+#### Dataset A
+
+```{r}
+data_01a_steps1and2 <- long_conversion(data_01a) #Performing steps 1 and 2
+data_01a_step3 <- surveys_year_measurements(data_01a_steps1and2) #Performing step 3
+creating2tibbles_addingstateordivision(data_01a_step3) #Performing steps 4, 5, and 6
+```
+
+#### Dataset B
+
+```{r}
+data_01b_steps1and2 <- long_conversion(data_01b) #Performing steps 1 and 2
+data_01b_step3 <- surveys_year_measurements(data_01b_steps1and2) #Performing step 3
+creating2tibbles_addingstateordivision(data_01b_step3) #Performing steps 4, 5, and 6
+```
+
+#### Dataset C
+
+```{r}
+data_01c_steps1and2 <- long_conversion(data_01c) #Performing steps 1 and 2
+data_01c_step3 <- surveys_year_measurements(data_01c_steps1and2) #Performing step 3
+creating2tibbles_addingstateordivision(data_01c_step3) #Performing steps 4, 5, and 6
+```
+
+#### Dataset D
+
+```{r}
+data_01d_steps1and2 <- long_conversion(data_01d) #Performing steps 1 and 2
+data_01d_step3 <- surveys_year_measurements(data_01d_steps1and2) #Performing step 3
+creating2tibbles_addingstateordivision(data_01d_step3) #Performing steps 4, 5, and 6
+```
+
+### Creating a Singular Object Using the Wrapper Function
+
+```{r, warning=FALSE}
+tibble1 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/PST01a.csv",
+                          value = value)
+tibble2 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/PST01b.csv",
+                          value = value)
+tibble3 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/PST01c.csv",
+                          value = value)
+tibble4 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/PST01d.csv",
+                          value = value)
+
+combined12 <- combine_tibbles(tibble1, tibble2)
+combined123 <- combine_tibbles(combined12, tibble3)
+combined1234 <- combine_tibbles(combined123, tibble4)
+```
+
+### Using the Plot Function on the State Data Frame
+
+```{r}
+#Use the plot function on the state data frame
+plot(combined1234[[2]])
+```
+
+### Using the Plot Function on the County Data Frame
+
+#### State is "CA", group is "top", and looking at 15
+
+```{r}
+plot(combined1234[[1]], State = "CA", top_or_bottom = "top", number_investigated = 15)
+```
+
+#### State is "TX", group is "top", and looking at 4
+
+```{r}
+plot(combined1234[[1]], State = "TX", top_or_bottom = "top", number_investigated = 4)
+```
+
+#### Default values
+
+```{r}
+plot(combined1234[[1]])
+```
+
+#### State is "NY", group is "top", and looking at 10
+
+```{r}
+plot(combined1234[[1]], State = "NY", top_or_bottom = "top", number_investigated = 10)
 ```
