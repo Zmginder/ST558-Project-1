@@ -78,11 +78,11 @@ long_conversion <- function(tibble, value = "values for enrollment") {
 
 ## Question 3: Create Year and Measurement Columns
 
-The next step of data processing is to collect all of the pieces of data from the surveys column. We can get year from the 8th and 9th characters of the surveys column and the measurement name from the 1st through 7th character of the surveys column. We can then mutate the year variable to be 4 digits be checking whether the two digits are less than or equal to 25, indicating the year is from the 2000s. Otherwise, the year is from the 1900s. We can also write a function to do this to make data processing easier for future tibbles.
+The next step of data processing is to collect all of the pieces of data from the surveys column. From the metadata information, we know that we can get year from the 8th and 9th characters of the surveys column and the measurement name from the 1st through 7th character of the surveys column. We can then mutate the year variable to be 4 digits be checking whether the two digits are less than or equal to 25, indicating the year is from the 2000s. Otherwise, the year is from the 1900s. We can also write a function to do this to make data processing easier for future tibbles.
 
 ```{r}
 #Without function
-#Parse the Survey column to create measurement and year columns
+#Parse the survey column to create measurement and year columns
 long_updated <- long_format |>
   #Pulling year from the 8th and 9th characters of the surveys column
   mutate(years = as.numeric(substr(surveys, 8, 9))) |> 
@@ -111,7 +111,7 @@ surveys_year_measurements <- function(long_format) {
 
 ## Question 4: Creating County and State Tibbles
 
-For this project, we need to divide the data into two tibbles: one with county level information and one with only state level information. We can do this by creating a list of indices where state initials are provided in the form ", XX", then using those indices to create the county tibble. Indices that do not follow that pattern only have state information, so the rest of the data comprise the state tibble. We also add "county" as a class to the county tibble and "state" as a class to the state tibble. This will allow us to make and utilize class specific functions later on in the project.
+For this project, we need to divide the data into two tibbles: one with county and state level information and one with only state level information. We can do this by creating a list of indices where state initials are provided in the form ", XX", then using those indices to create the county tibble. Indices that do not follow that pattern only have state information, so the rest of the data comprise the state tibble. We also add "county" as a class to the county tibble and "state" as a class to the state tibble. This will allow us to make and utilize class specific functions later on in the project.
 
 ```{r}
 #Without function
@@ -254,7 +254,7 @@ adding_division_to_noncounty <- function(state_tibble){
 }
 ```
 
-Now that we have finished the 6 data processing steps, we can create a function that performs all of the steps. This function takes in the long format tibble that we created, divides it into a county tibble and a state tibble, adds the state and division variables to those two datasets respectively, and then returns a list of the final county tibble and the final non-county (state) tibble.
+Now that we have finished the 6 data processing steps, we can create a function that performs all of the steps. This function takes in the long format tibble that we created, divides it into a county tibble and a state tibble, adds the state and division variables to those two tibbles respectively, and then returns a list of the final county tibble and the final non-county (state) tibble.
 
 ```{r}
 #Writing function that uses Step 3 output and performs Steps 4, 5, and 6
@@ -310,8 +310,10 @@ In case we are reading in data from multiple sources, we also want to write a fu
 ```{r}
 #Creating a single short function to combine tibbles 
 combine_tibbles <- function(tibble1,tibble2) {
+  #Selecting the county tibbles to combine
   county_combined_tibble <- bind_rows(tibble1[["county_final"]],
                                       tibble2[["county_final"]])
+  #Selecting the noncounty (state) tibbles to combine
   state_combined_tibble <- bind_rows(tibble1[["noncounty_final"]],
                                      tibble2[["noncounty_final"]])
   return(list("county_combined" = county_combined_tibble, 
