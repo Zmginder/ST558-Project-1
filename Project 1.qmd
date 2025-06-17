@@ -5,39 +5,55 @@ format: pdf
 editor: visual
 ---
 
-```{r, warning=FALSE, message=FALSE}
+```{r, include=FALSE}
 rm(list=ls())
+```
 
+```{r, warning=FALSE, message=FALSE}
 #Load in libraries
 library(tidyverse)
 ```
 
 # Data Reading
 
+First, we read in the CSV file. This file contains comma delimited information from the census about education and enrollment in the US. 
+
 ```{r, warning=FALSE, message=FALSE}
-census_2010<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
+#Reading in comma delimited data
+census_2010 <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv")
 ```
 
 # Data Processing, with and without Functions
 
-## Question 1: Column Selection
+## Question 1: Column Selection and Renaming
+
+The first step of data processing is selecting the necessary variables. For this project, we are selecting the variables corresponding to area name, STCOU, and any column ending in "D". We also rename the area name variable.
 
 ```{r}
 #Without function
 selected_columns <- census_2010 |> 
-  select(Area_name, STCOU, ends_with("D")) |> #Selecting area name, STCOU, and all columns ending in D
-  rename(area_name = Area_name) #Renaming Area_name
+  #Selecting area name, STCOU, and all columns ending in D
+  select(Area_name, STCOU, ends_with("D")) |> 
+  #Renaming Area_name
+  rename(area_name = Area_name) 
+
 head(selected_columns, n = 5L) #Returning first 5 rows
 ```
 
 ## Question 2: Long Format Conversion
 
+The next step of data processing is converting the data file to the proper form. In this case, instead of a wide tibble, we want a long tibble where each row is an enrollment value corresponding to a particular census survey and area. 
+
 ```{r}
 #Without function
 long_format <- selected_columns |> 
+  #taking the columns ending in D (corresponding to different census surveys)
+  #and creating individual rows for each
   pivot_longer(cols = ends_with("D"), names_to = "surveys")
-head(long_format, n = 5L) #Returning first 5 rows
+head(long_format, n = 5L) #Returning first 5 rows of the new tibble
 ```
+
+We can also create a function that performs both the column selection and renaming steps from question one, and performs the wide to long tibble conversion from step two. This function could be used on other tibbles, thereby making additional data cleaning easier. 
 
 ```{r}
 #With function
@@ -45,8 +61,12 @@ head(long_format, n = 5L) #Returning first 5 rows
 #Convert the tibble into long format
 long_conversion <-function(tibble, value = "values for enrollment") {
   long_format <- tibble |>
+    #Selecting appropriate columns
     select(Area_name, STCOU, ends_with("D")) |>
+    #Renaming area name
     rename(area_name = Area_name) |>
+    #taking the columns ending in D (corresponding to different census surveys)
+    #and creating individual rows for each
     pivot_longer(cols = ends_with("D"), names_to = "surveys")
   return(long_format)
 }
@@ -54,47 +74,65 @@ long_conversion <-function(tibble, value = "values for enrollment") {
 
 ## Question 3: Create Year and Measurement Columns
 
+The next step of data processing is to collect all of the pieces of data from the surveys column. We can get year from the 8th and 9th characters of the surveys column and the measurement name from the 1st through 7th character of the surveys column. We can then mutate the year variable to be 4 digits be checking whether the two digits are less than or equal to 25, indicating the year is from the 2000s. Otherwise, the year is from the 1900s. We can also write a function to do this to make data processing easier for future tibbles. 
+
 ```{r}
 #Without function
 #Parse the Survey column to create measurement and year columns
 long_updated <- long_format |>
-  mutate(years = as.numeric(substr(surveys, 8, 9))) |>
+  #Pulling year from the 8th and 9th characters of the surveys column
+  mutate(years = as.numeric(substr(surveys, 8, 9))) |> 
+  #Converting year into a 4 digit year 
   mutate(years = ifelse(years <= 25 & years >= 0, years + 2000, years + 1900)) |>
+  #Pulling the measurement name from the 1st through 7th character of the surveys column
   mutate(measurements = substr(surveys, 1, 7))
 head(long_updated, n = 5L)
 
 #Function that does question 3
 surveys_year_measurements <- function(long_format) {
-  long_updated<-long_format |>
+  long_updated <- long_format |>
+  #Pulling year from the 8th and 9th characters of the surveys column
   mutate(years = as.numeric(substr(surveys, 8, 9))) |>
+  #Converting year into a 4 digit year 
   mutate(years = ifelse(years <= 25 & years >= 0, years + 2000, years + 1900)) |>
-  mutate(measurements=substr(surveys, 1, 7))
+  #Pulling the measurement name from the 1st through 7th character of the surveys column
+  mutate(measurements = substr(surveys, 1, 7))
   return(long_updated)
 }
 ```
 
-## Question 4: Creating Two Data Sets
+## Question 4: Creating County and State Tibbles
+
+For this project, we need to divide the data into two tibbles: one with county level information and one with only state level information. We can do this by creating a list of indices where state initials are provided in the form ", XX", then using those indices to create the county tibble. Indices that do not follow that pattern only have state information, so the rest of the data comprise the state tibble. We also add "county" as a class to the county tibble and "state" as a class to the state tibble. This will allow us to make and utilize class specific functions later on in the project. 
 
 ```{r}
 #Without function
-indices <- grep(pattern = ", \\w\\w", long_updated$area_name) #get the county indices
+#Finding the indices corresponding to the counties
+indices <- grep(pattern = ", \\w\\w", long_updated$area_name)
 
+#Creating a county tibble that contains the county indices
 county_tibble <- long_updated[indices,]
+#Adding "county" as a class to the county tibble
 class(county_tibble) <- c("county", class(county_tibble))
 
+#Creating a state tibble that does not contain the county indices
 state_tibble <- long_updated[-c(indices),]
+#Adding "state" as a class to the state tibble
 class(state_tibble) <- c("state", class(state_tibble))
 
+#Displaying 10 rows of each tibble
 head(county_tibble, n=10L)
-
 head(state_tibble, n=10L)
 ```
 
 ## Question 5: Creating State Variable for County Tibble
 
+Next, we add a state variable to the county tibble by taking the last and second to last characters of area name. We create a function to do this so we can more easily do this again on other tibbles .
+
 ```{r}
 #Without function
 county_q5 <- county_tibble |>
+  #Creating a state variable from the last and second to last characters of area name
   mutate(state = substr(area_name, (nchar(area_name) - 1), nchar(area_name)))
 ```
 
@@ -103,6 +141,7 @@ county_q5 <- county_tibble |>
 #Function to perform step 5
 adding_state_to_county <- function(county_tibble){
   county_w_state <- county_tibble |>
+    #Creating a state variable from the last and second to last characters of area name
     mutate(state = substr(area_name, (nchar(area_name) - 1), nchar(area_name)))
   return(county_w_state)
 }
@@ -110,10 +149,13 @@ adding_state_to_county <- function(county_tibble){
 
 ## Question 6: Creating Division Variable for Non-County Tibble
 
+For the state tibble, we can create a division variable based on the region that the state is located in. This allows us to assess regional trends and patterns later in the project. We also created a function to do this to make this processing step easier with future tibbles. 
+
 ```{r}
 #Without function
 non_county_q6 <- state_tibble |>
   mutate(division = 
+           #Creating a division variable by matching the state name
            case_when(area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", 
                                       "NEW HAMPSHIRE","RHODE ISLAND", "VERMONT")
                      ~ "New England",
@@ -146,6 +188,7 @@ non_county_q6 <- state_tibble |>
 adding_division_to_noncounty <- function(state_tibble){
   noncounty_w_division <- state_tibble |>
     mutate(division =
+             #Creating a division variable by matching the state name
              case_when(area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", 
                                       "NEW HAMPSHIRE","RHODE ISLAND", "VERMONT")
                      ~ "New England",
@@ -173,20 +216,27 @@ adding_division_to_noncounty <- function(state_tibble){
 }
 ```
 
+Now that we have finished the 6 data processing steps, we can create a function that performs all of the steps. This function takes in the long format tibble that we created, divides it into a county tibble and a state tibble, adds the state and division variables to those two datasets respectively, and then returns a list of the final county tibble and the final non-county (state) tibble.  
+
 ```{r}
 #Writing function that uses Step 3 output and performs Steps 4, 5, and 6
 
+#This function takes in the long dataset created by Step 3
 creating2tibbles_addingstateordivision <- function(long_updated){
+  #Separating into county and state tibbles (Step 4)
   indices <- grep(pattern = ", \\w\\w", long_updated$area_name)
   county_tibble <- long_updated[indices,]
   class(county_tibble) <- c("county", class(county_tibble))
-  
   state_tibble <- long_updated[-c(indices),]
   class(state_tibble) <- c("state", class(state_tibble))
   
+  #Adding the state variable to the county tibble using the Step 5 function
   county_state_final <- adding_state_to_county(county_tibble)
+  
+  #Adding the division variable to the state tibble using the Step 6 function
   noncounty_division_final <- adding_division_to_noncounty(state_tibble)
   
+  #Returning a list of the two tibbles
   return(list("county_final" = county_state_final, 
               "noncounty_final" = noncounty_division_final))
 }
@@ -261,6 +311,7 @@ return(final_tibble)
 }
 ```
 
+\newpage
 # Putting It All Together
 
 ## Testing the functions on the initial two datasets
@@ -268,18 +319,28 @@ return(final_tibble)
 ```{r, warning=FALSE, message=FALSE}
 #Process two data sets and combine them
 tibble1 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01a.csv",
-                          value = value)
+                            value = value)
 tibble2 <- wrapper_function(url="https://www4.stat.ncsu.edu/~online/datasets/EDU01b.csv",
-                          value = value)
+                            value = value)
 
-combine_tibbles(tibble1, tibble2)
 combined <- combine_tibbles(tibble1, tibble2)
+combined
 ```
+
+\newpage
+
+### Using the Plot Function on the State Data Frame
 
 ```{r}
 #Use the plot function on the state data frame
 plot(combined[[2]])
 ```
+
+\newpage
+
+### Plotting the County Data Frame
+
+#### State is "NC", group is "top", and looking at 20
 
 ```{r}
 #Use the plot function on the county data frame
@@ -287,16 +348,24 @@ plot(combined[[2]])
 plot(combined[[1]], State = "NC", top_or_bottom = "top", number_investigated = 20)
 ```
 
+#### State is "SC", group is "bottom", and looking at 7
+
 ```{r}
 #Use the plot function on the county data frame
 #Specify state to be SC, group bottom, number 7
 plot(combined[[1]], State = "SC", top_or_bottom = "bottom", number_investigated = 7)
 ```
 
+\newpage
+
+#### Default values
+
 ```{r}
 #Use the plot function with defaults
 plot(combined[[1]])
 ```
+
+#### State is "PA", group is "top", and looking at 8
 
 ```{r}
 #Use the plot function on the county data frame
@@ -304,15 +373,8 @@ plot(combined[[1]])
 plot(combined[[1]], State = "PA", top_or_bottom = "top", number_investigated = 8)
 ```
 
+\newpage
 ## Testing functions on four additional datasets
-
-```{r, warning=FALSE, message=FALSE}
-#Read in the following data
-data_01a<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01a.csv")
-data_01b<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01b.csv")
-data_01c<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01c.csv")
-data_01d<-read_csv("https://www4.stat.ncsu.edu/~online/datasets/PST01d.csv")
-```
 
 ### Running the Data Processing (Wrapping) Functions on Each of the Four Datasets
 
@@ -335,12 +397,16 @@ combined123 <- combine_tibbles(combined12, tibble3)
 combined1234 <- combine_tibbles(combined123, tibble4)
 ```
 
+\newpage
+
 ### Using the Plot Function on the State Data Frame
 
 ```{r}
 #Use the plot function on the state data frame
 plot(combined1234[[2]])
 ```
+
+\newpage
 
 ### Using the Plot Function on the County Data Frame
 
@@ -355,6 +421,8 @@ plot(combined1234[[1]], State = "CA", top_or_bottom = "top", number_investigated
 ```{r}
 plot(combined1234[[1]], State = "TX", top_or_bottom = "top", number_investigated = 4)
 ```
+
+\newpage
 
 #### Default values
 
